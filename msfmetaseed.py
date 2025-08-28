@@ -7,7 +7,6 @@ import time
 import random
 from pathlib import Path
 
-# Adiciona o diretório raiz ao path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from utils.animations import loading_animation, show_banner, show_version
@@ -23,39 +22,32 @@ from modules.post.camera import CameraModule
 
 class MetaseedFramework:
     def __init__(self):
-        # Carregar configurações
+
         self.config = Config()
         
-        # Inicializar banco de dados
         self.db = Database(self.config.get("DATABASE_PATH"))
         
-        # Inicializar componentes
         self.server = C2Server(self.config, self.db)
         self.handler = MultiHandler(self.config)
         self.payload_generator = PayloadGenerator()
         self.exploit_manager = ExploitManager(self.config.get("DATABASE_PATH"))
         self.scanner = ScannerModule()
-        self.camera = CameraModule(self.server)
-        
-        # Estado atual
+        self.camera = CameraModule(self.server)    
         self.current_module = None
         self.current_session = None
         self.prompt = "metaseed"
         
     def start(self):
-        # Mostra animação de carregamento
+
         loading_animation("Iniciando Metaseed Framework", duration=2)
         
-        # Mostra banner
         clear_screen()
         show_banner(self.config.get("BANNER_STYLE"))
         show_version()
         
-        # Iniciar servidor C2
         if not self.server.start_server():
             print_error("Falha ao iniciar servidor C2")
             
-        # Loop principal de comando
         while True:
             try:
                 if self.current_session:
@@ -241,25 +233,21 @@ Exemplos:
         option = parts[1].upper()
         value = " ".join(parts[2:])
         
-        # Configurações globais
         if option in ["LHOST", "LPORT", "PROTOCOL", "ENCODING"]:
             self.config.set(option, value)
             print_success(f"{option} => {value}")
             
-            # Atualizar também no payload generator se for relevante
             if option == "PROTOCOL":
                 self.payload_generator.set_protocol(value)
             elif option == "ENCODING":
                 self.payload_generator.set_encoding(value)
                 
-        # Configurações específicas de payload
         elif self.current_module and self.current_module.startswith("payload/"):
             if option == "PAYLOAD":
                 self.payload_generator.select_payload(value)
             elif option == "PLATFORM":
                 self.payload_generator.set_platform(value)
                 
-        # Configurações específicas de scanner
         elif self.current_module == "auxiliary/scanner":
             if option == "TARGET":
                 self.scanner.set_target(value)
@@ -283,7 +271,6 @@ Exemplos:
                 print("="*50)
                 print_success("Copie e cole este código na máquina alvo")
                 
-                # Iniciar handler automaticamente
                 if self.config.get("AUTO_START"):
                     handler_id = self.handler.start_handler(
                         self.payload_generator.current_payload,
@@ -322,7 +309,6 @@ Exemplos:
                 self.prompt = f"metaseed({session_id})"
                 print_success(f"Interagindo com sessão {session_id}")
                 
-                # Mostrar informações da sessão
                 client = self.server.clients[session_id]
                 print_info(f"OS: {client['os']}")
                 print_info(f"Usuário: {client['username']}")
