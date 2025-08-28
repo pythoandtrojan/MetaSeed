@@ -16,7 +16,13 @@ class Config:
             "LOG_FILE": "metaseed.log",
             "DATABASE_PATH": "data/database.db",
             "BANNER_STYLE": "random",
-            "CHECK_UPDATES": True
+            "CHECK_UPDATES": True,
+            "CONNECTION_MODE": "listener",  # listener or connector
+            "RHOST": "127.0.0.1",
+            "RPORT": 4444,
+            "THEME": "default",
+            "API_TIMEOUT": 10,
+            "NOTIFICATION_WEBHOOK": ""
         }
         self.settings = self.default_config.copy()
         self.load_config()
